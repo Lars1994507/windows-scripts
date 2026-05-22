@@ -261,15 +261,21 @@ def interactive_payment_calculator():
         print("\n📋 STEP 1: Basic Loan Information")
         principal = float(input("   Out-the-door (OTD) price / Total loan amount: $"))
         
-        paid_off = float(input("   How much have you already paid off? $"))
+        # MODIFIED: Changed the prompt text
+        paid_off = float(input("   How much do you have left to pay off? $"))
         
+        # Adjust logic: Now paid_off represents remaining balance, not amount already paid
+        # So we need to calculate how much has been paid off already
         if paid_off > principal:
-            print("\n⚠️ Warning: You've paid off more than the original loan amount!")
-            print("   This could mean overpayment or an incorrect entry.")
+            print("\n⚠️ Warning: Remaining balance is more than the original loan amount!")
+            print("   This could mean negative payments or an incorrect entry.")
             confirm = input("   Continue anyway? (y/n): ").lower()
             if confirm != 'y':
                 print("   Please restart and enter correct amounts.")
                 return
+        
+        # Calculate amount already paid
+        already_paid = principal - paid_off
         
         interest_rate_percent = float(input("   Annual interest rate (e.g., 8.5 for 8.5%): "))
         interest_rate = interest_rate_percent / 100
@@ -282,12 +288,12 @@ def interactive_payment_calculator():
         do_comparison = input("   Compare different payment scenarios? (y/n): ").lower() == 'y'
         do_extra_analysis = input("   Show how extra payments help? (y/n): ").lower() == 'y'
         
-        # Calculate and display main result
+        # Calculate and display main result - pass already_paid instead of remaining balance
         print("\n" + "-"*40)
         print("📈 YOUR PAYOFF SUMMARY")
         print("-"*40)
         
-        result = calculate_payoff_time(principal, interest_rate, monthly_payment, paid_off)
+        result = calculate_payoff_time(principal, interest_rate, monthly_payment, already_paid)
         
         if result['error']:
             print(f"\n❌ {result['error']}")
@@ -297,10 +303,11 @@ def interactive_payment_calculator():
             print("   • Negotiate a lower interest rate")
             print("   • Make a lump sum payment if possible")
         else:
-            remaining = principal - paid_off
+            remaining = principal - already_paid
             
             print(f"\n✅ LOAN PAYOFF ANALYSIS")
             print(f"   Original OTD price:          ${result['original_principal']:,.2f}")
+            print(f"   Amount left to pay off:      ${paid_off:,.2f}")
             print(f"   Already paid off:            ${result['already_paid_off']:,.2f}")
             print(f"   Remaining balance:           ${result['remaining_principal']:,.2f}")
             print(f"   ─────────────────────────────")
@@ -311,7 +318,7 @@ def interactive_payment_calculator():
             
             # Show total loan cost breakdown if requested
             if show_cost_breakdown:
-                show_total_loan_cost_breakdown(principal, interest_rate, monthly_payment, paid_off)
+                show_total_loan_cost_breakdown(principal, interest_rate, monthly_payment, already_paid)
             
             # Show a few months of payment schedule
             print("\n📅 FIRST 3 MONTHS BREAKDOWN (starting now):")
@@ -334,11 +341,11 @@ def interactive_payment_calculator():
         
         # Run comparison if requested
         if do_comparison and not result['error']:
-            compare_payment_scenarios(principal, interest_rate, paid_off)
+            compare_payment_scenarios(principal, interest_rate, already_paid)
         
         # Run extra payment analysis if requested
         if do_extra_analysis and not result['error']:
-            show_extra_payment_analysis(principal, interest_rate, monthly_payment, paid_off)
+            show_extra_payment_analysis(principal, interest_rate, monthly_payment, already_paid)
         
         # Optional: Show savings tips
         print("\n" + "="*60)
@@ -371,7 +378,9 @@ def quick_calculation_mode():
     try:
         print("\nEnter your loan details:")
         principal = float(input("   OTD price / Loan amount: $"))
-        paid_off = float(input("   Already paid: $"))
+        # MODIFIED: Changed prompt text
+        remaining_balance = float(input("   How much do you have left to pay off? $"))
+        paid_off = principal - remaining_balance
         interest_rate = float(input("   Interest rate (%): ")) / 100
         monthly_payment = float(input("   Monthly payment: $"))
         
@@ -380,12 +389,11 @@ def quick_calculation_mode():
         if result['error']:
             print(f"\n❌ {result['error']}")
         else:
-            remaining = principal - paid_off
             print(f"\n✅ QUICK SUMMARY:")
-            print(f"   Remaining balance:        ${remaining:,.2f}")
-            print(f"   Payoff time:              {result['years_months']}")
-            print(f"   Total interest to pay:    ${result['total_interest']:,.2f}")
-            print(f"   TOTAL LOAN COST (OTD+int): ${result['total_loan_cost']:,.2f}")
+            print(f"   Amount left to pay off:     ${remaining_balance:,.2f}")
+            print(f"   Payoff time:                {result['years_months']}")
+            print(f"   Total interest to pay:      ${result['total_interest']:,.2f}")
+            print(f"   TOTAL LOAN COST (OTD+int):   ${result['total_loan_cost']:,.2f}")
             
             # Show brief interest analysis
             interest_percentage = (result['total_interest'] / principal) * 100
@@ -421,7 +429,8 @@ def main():
             try:
                 print("\n" + "-"*40)
                 principal = float(input("Original OTD price / Loan amount: $"))
-                paid_off = float(input("Already paid off: $"))
+                remaining_balance = float(input("How much do you have left to pay off? $"))
+                paid_off = principal - remaining_balance
                 interest_rate = float(input("Interest rate (%): ")) / 100
                 compare_payment_scenarios(principal, interest_rate, paid_off)
             except ValueError:
@@ -430,7 +439,8 @@ def main():
             try:
                 print("\n" + "-"*40)
                 principal = float(input("Original OTD price / Loan amount: $"))
-                paid_off = float(input("Already paid off: $"))
+                remaining_balance = float(input("How much do you have left to pay off? $"))
+                paid_off = principal - remaining_balance
                 interest_rate = float(input("Interest rate (%): ")) / 100
                 monthly_payment = float(input("Current monthly payment: $"))
                 show_extra_payment_analysis(principal, interest_rate, monthly_payment, paid_off)
@@ -440,7 +450,8 @@ def main():
             try:
                 print("\n" + "-"*40)
                 principal = float(input("Original OTD price / Loan amount: $"))
-                paid_off = float(input("Already paid off: $"))
+                remaining_balance = float(input("How much do you have left to pay off? $"))
+                paid_off = principal - remaining_balance
                 interest_rate = float(input("Interest rate (%): ")) / 100
                 monthly_payment = float(input("Current monthly payment: $"))
                 show_total_loan_cost_breakdown(principal, interest_rate, monthly_payment, paid_off)

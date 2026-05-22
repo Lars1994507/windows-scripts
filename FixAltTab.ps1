@@ -1,5 +1,8 @@
 # FixAltTab.ps1
 # Script to fix Alt+Tab not working on Windows 11
+
+
+
 # Run as Administrator
 
 Write-Host "========================================" -ForegroundColor Cyan
